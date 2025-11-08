@@ -9,5 +9,6 @@ class ApiApplicationTest {
     @Test
     void someTest() {
         // do the thing here
+        assert true;
     }
 }
