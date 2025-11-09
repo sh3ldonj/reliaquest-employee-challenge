@@ -4,6 +4,8 @@ import com.reliaquest.api.model.CreateEmployeeInput;
 import com.reliaquest.api.model.Employee;
 import com.reliaquest.api.service.EmployeeService;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -24,12 +26,15 @@ public class EmployeeController implements IEmployeeController<Employee, CreateE
 
     @Override
     public ResponseEntity<List<Employee>> getEmployeesByNameSearch(String searchString) {
-        throw new UnsupportedOperationException();
+        return ResponseEntity.ok(employeeService.getAllEmployees().stream()
+                .filter(employee -> Objects.nonNull(employee.getName())
+                        && employee.getName().toLowerCase().contains(searchString.toLowerCase()))
+                .collect(Collectors.toList()));
     }
 
     @Override
     public ResponseEntity<Employee> getEmployeeById(String id) {
-        throw new UnsupportedOperationException();
+        return ResponseEntity.ok(employeeService.getEmployeeById(id));
     }
 
     @Override

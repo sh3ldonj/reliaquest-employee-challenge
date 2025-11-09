@@ -46,6 +46,29 @@ public class EmployeeService {
         }
     }
 
+    public Employee getEmployeeById(String id) {
+        log.debug("Fetching employee by ID: {}", id);
+        try {
+            ResponseEntity<Response<Employee>> response = restTemplate.exchange(
+                    BASE_URL + "/" + id,
+                    org.springframework.http.HttpMethod.GET,
+                    null,
+                    new ParameterizedTypeReference<Response<Employee>>() {});
+
+            Response<Employee> responseWrapper = response.getBody();
+            if (responseWrapper == null || responseWrapper.data() == null) {
+                log.error("Failed to retreive employee by id - response was null");
+                throw new RuntimeException("Failed to retrieve employee by id - response was null");
+            }
+
+            log.info("Successfully retrieved employee");
+            return responseWrapper.data();
+        } catch (org.springframework.web.client.RestClientException e) {
+            log.error("Error fetching employee by ID: {}", id, e);
+            throw new RuntimeException("Error fetching employee by ID: " + id, e);
+        }
+    }
+
     public Employee create(@NonNull CreateEmployeeInput input) {
         log.debug("Creating new employee");
         try {
