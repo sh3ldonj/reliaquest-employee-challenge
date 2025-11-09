@@ -3,6 +3,8 @@ package com.reliaquest.api.controller;
 import com.reliaquest.api.model.CreateEmployeeInput;
 import com.reliaquest.api.model.Employee;
 import com.reliaquest.api.service.EmployeeService;
+
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -39,12 +41,24 @@ public class EmployeeController implements IEmployeeController<Employee, CreateE
 
     @Override
     public ResponseEntity<Integer> getHighestSalaryOfEmployees() {
-        throw new UnsupportedOperationException();
+        List<Employee> allEmployees = employeeService.getAllEmployees();
+        int highestSalary = allEmployees.stream()
+                .filter(employee -> Objects.nonNull(employee.getSalary()))
+                .mapToInt(Employee::getSalary)
+                .max()
+                .orElse(0);
+        return ResponseEntity.ok(highestSalary);
     }
 
     @Override
     public ResponseEntity<List<String>> getTopTenHighestEarningEmployeeNames() {
-        throw new UnsupportedOperationException();
+        List<String> topTenHighestEarningEmployeeNames = employeeService.getAllEmployees().stream()
+                .filter(employee -> Objects.nonNull(employee.getSalary()) && Objects.nonNull(employee.getName()))
+                .sorted(Comparator.comparing(Employee::getSalary).reversed())
+                .limit(10)
+                .map(Employee::getName)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(topTenHighestEarningEmployeeNames);
     }
 
     @Override
