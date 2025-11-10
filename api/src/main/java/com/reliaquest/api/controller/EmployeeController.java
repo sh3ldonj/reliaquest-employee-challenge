@@ -1,15 +1,17 @@
 package com.reliaquest.api.controller;
 
 import com.reliaquest.api.model.CreateEmployeeInput;
+import com.reliaquest.api.model.DeleteEmployeeInput;
 import com.reliaquest.api.model.Employee;
 import com.reliaquest.api.service.EmployeeService;
-
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -64,13 +66,18 @@ public class EmployeeController implements IEmployeeController<Employee, CreateE
     @Override
     public ResponseEntity<Employee> createEmployee(@RequestBody CreateEmployeeInput input) {
         Employee created = employeeService.create(input);
-        return ResponseEntity.status(org.springframework.http.HttpStatus.CREATED)
-                .body(created);
+        return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
     @Override
-    public ResponseEntity<String> deleteEmployeeById(String id) {
-        // TODO: Implement delete by ID
-        throw new UnsupportedOperationException("Not yet implemented");
+    public ResponseEntity<String> deleteEmployeeById(@PathVariable("id") String id) {
+        List<Employee> allEmployees = employeeService.getAllEmployees();
+        Employee employeeToDelete = allEmployees.stream()
+                .filter(employee -> employee.getId().toString().equals(id))
+                .collect(Collectors.toList())
+                .get(0);
+        DeleteEmployeeInput deleteInput = new DeleteEmployeeInput();
+        deleteInput.setName(employeeToDelete.getName());
+        return ResponseEntity.ok(employeeService.delete(deleteInput));
     }
 }
