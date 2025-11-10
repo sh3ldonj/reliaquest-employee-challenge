@@ -11,8 +11,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
@@ -40,6 +42,9 @@ public class EmployeeService {
                     "Successfully retrieved {} employees",
                     responseWrapper.data().size());
             return responseWrapper.data();
+        } catch (HttpClientErrorException e) {
+            handleHttpClientErrorException(e);
+            return null;
         } catch (RestClientException e) {
             log.error("Error fetching all employees from server", e);
             throw new RuntimeException("Error fetching all employees from server", e);
@@ -60,6 +65,9 @@ public class EmployeeService {
 
             log.info("Successfully retrieved employee");
             return responseWrapper.data();
+        } catch (HttpClientErrorException e) {
+            handleHttpClientErrorException(e);
+            return null;
         } catch (RestClientException e) {
             log.error("Error fetching employee by ID: {}", id, e);
             throw new RuntimeException("Error fetching employee by ID: " + id, e);
@@ -83,6 +91,9 @@ public class EmployeeService {
             Employee created = responseWrapper.data();
             log.info("Successfully created employee: {} with ID: {}", created.getName(), created.getId());
             return created;
+        } catch (HttpClientErrorException e) {
+            handleHttpClientErrorException(e);
+            return null;
         } catch (RestClientException e) {
             log.error("Error creating employee", e);
             throw new RuntimeException("Failed to create employee", e);
@@ -106,9 +117,20 @@ public class EmployeeService {
 
             log.info("Successfully deleted employee: {}", input.getName());
             return input.getName();
+        } catch (HttpClientErrorException e) {
+            handleHttpClientErrorException(e);
+            return null;
         } catch (RestClientException e) {
             log.error("Error deleting employee", e);
             throw new RuntimeException("Failed to delete employee", e);
         }
+    }
+
+    private void handleHttpClientErrorException(HttpClientErrorException e) {
+        if (e.getStatusCode() == HttpStatus.NOT_FOUND) {
+            log.warn("Rate limited by server (429 Too Many Requests)");
+            throw new RuntimeException("Server rate limit exceeded. Please try again later.", e);
+        }
+        throw e;
     }
 }

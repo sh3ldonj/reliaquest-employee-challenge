@@ -29,7 +29,7 @@ public class EmployeeController implements IEmployeeController<Employee, CreateE
     }
 
     @Override
-    public ResponseEntity<List<Employee>> getEmployeesByNameSearch(String searchString) {
+    public ResponseEntity<List<Employee>> getEmployeesByNameSearch(@PathVariable String searchString) {
         return ResponseEntity.ok(employeeService.getAllEmployees().stream()
                 .filter(employee -> Objects.nonNull(employee.getName())
                         && employee.getName().toLowerCase().contains(searchString.toLowerCase()))
@@ -37,7 +37,7 @@ public class EmployeeController implements IEmployeeController<Employee, CreateE
     }
 
     @Override
-    public ResponseEntity<Employee> getEmployeeById(String id) {
+    public ResponseEntity<Employee> getEmployeeById(@PathVariable String id) {
         return ResponseEntity.ok(employeeService.getEmployeeById(id));
     }
 
@@ -70,14 +70,17 @@ public class EmployeeController implements IEmployeeController<Employee, CreateE
     }
 
     @Override
-    public ResponseEntity<String> deleteEmployeeById(@PathVariable("id") String id) {
-        List<Employee> allEmployees = employeeService.getAllEmployees();
-        Employee employeeToDelete = allEmployees.stream()
-                .filter(employee -> employee.getId().toString().equals(id))
-                .collect(Collectors.toList())
-                .get(0);
-        DeleteEmployeeInput deleteInput = new DeleteEmployeeInput();
-        deleteInput.setName(employeeToDelete.getName());
-        return ResponseEntity.ok(employeeService.delete(deleteInput));
+    public ResponseEntity<String> deleteEmployeeById(@PathVariable String id) {
+        try {
+            Employee employeeToDelete = employeeService.getEmployeeById(id);
+            DeleteEmployeeInput deleteInput = new DeleteEmployeeInput();
+            deleteInput.setName(employeeToDelete.getName());
+            return ResponseEntity.ok(employeeService.delete(deleteInput));
+        } catch (RuntimeException e) {
+            if (e.getMessage() != null && e.getMessage().contains("not found")) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Employee not found with ID: " + id);
+            }
+            throw e;
+        }
     }
 }
