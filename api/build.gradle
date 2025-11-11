@@ -7,6 +7,13 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-validation'
 }
 
+test {
+    testLogging {
+        events "passed", "skipped", "failed"
+        exceptionFormat "full"
+    }
+}
+
 springBoot {
     mainClass = 'com.reliaquest.api.ApiApplication'
 }

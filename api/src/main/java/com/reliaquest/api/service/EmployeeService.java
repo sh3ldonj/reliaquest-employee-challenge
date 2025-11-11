@@ -59,7 +59,7 @@ public class EmployeeService {
 
             Response<Employee> responseWrapper = response.getBody();
             if (responseWrapper == null || responseWrapper.data() == null) {
-                log.error("Failed to retreive employee by id - response was null");
+                log.error("Failed to retrieve employee by id - response was null");
                 throw new RuntimeException("Failed to retrieve employee by id - response was null");
             }
 
@@ -127,7 +127,7 @@ public class EmployeeService {
     }
 
     private void handleHttpClientErrorException(HttpClientErrorException e) {
-        if (e.getStatusCode() == HttpStatus.NOT_FOUND) {
+        if (e.getStatusCode().value() == HttpStatus.TOO_MANY_REQUESTS.value()) {
             log.warn("Rate limited by server (429 Too Many Requests)");
             throw new RuntimeException("Server rate limit exceeded. Please try again later.", e);
         }
